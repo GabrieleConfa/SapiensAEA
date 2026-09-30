@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Recorded data and large artefacts
+data/
+results/*
+!results/.gitkeep
+
+# Downloaded models (hash and date are tracked in models/MODELS.md)
+models/*.task
+
+# Generated firmware config (run scripts/gen_firmware_config.py)
+firmware/emg_giga/config_gen.h
+
+# Per-setup local files
+config/led_roi.json
+config/*.local.toml
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

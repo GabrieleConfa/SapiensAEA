@@ -1,0 +1,12 @@
+[project]
+name = "emg-grip"
+version = "0.1.0"
+description = "Hand grip estimation from forearm surface EMG, stand-alone on an Arduino GIGA"
+requires-python = ">=3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: tests that run a real-time simulator for several seconds",
+]

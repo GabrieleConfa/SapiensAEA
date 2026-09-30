@@ -1,0 +1,163 @@
+# =============================================================================
+# EMG grip project - the single configuration file.
+#
+# Every value that depends on hardware not yet known is set to "TODO_HW".
+# Code that needs such a value refuses to run and names the key to fill in.
+# The firmware header is generated from this file:
+#     python -m scripts.gen_firmware_config
+# =============================================================================
+
+[project]
+data_dir = "data"
+results_dir = "results"
+
+# -----------------------------------------------------------------------------
+# EMG acquisition chain: front-end -> Arduino GIGA -> USB -> laptop
+# -----------------------------------------------------------------------------
+[emg]
+# Sampling source inside the firmware:
+#   "ads1299_spi" - GIGA is SPI master of an ADS1299 (the chip on the OpenBCI board),
+#                   sampling clocked by the ADS1299 DRDY line.
+#   "giga_adc"    - GIGA on-board ADC on A0..A7, triggered by a hardware timer (16 bit).
+# TODO_HW: how the OpenBCI board is wired to the GIGA is not decided yet (see README, "Open points").
+source = "ads1299_spi"
+front_end = "OpenBCI Cyton biosensing board (ADS1299), 8 channels, bipolar"
+n_channels = 8
+fs_hz = 1000
+# Channel names written into session.json. Rename once electrode positions are fixed.
+channel_labels = ["CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"]
+
+[emg.ads1299]
+gain = 24                # PGA gain, same as the Cyton "x<ch>060100X" setting
+vref_v = 4.5
+spi_clock_hz = 4000000
+# GIGA pin numbers (integers) wired to the ADS1299.
+pin_cs = "TODO_HW"
+pin_drdy = "TODO_HW"
+pin_reset = "TODO_HW"
+pin_start = "TODO_HW"
+pin_pwdn = "TODO_HW"
+
+[emg.giga_adc]
+# Analog inputs used when source = "giga_adc", in channel order.
+pins = ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7"]
+vref_v = 3.3
+front_end_gain = "TODO_HW"   # gain of the analog front-end before the GIGA pins
+
+[serial]
+# Laptop port of the GIGA, e.g. "COM5". The simulator uses "socket://localhost:8765".
+port = "TODO_HW"
+baudrate = 2000000           # ignored by USB CDC, kept for completeness
+simulator_url = "socket://localhost:8765"
+
+# -----------------------------------------------------------------------------
+# Synchronisation LED and calibration button (GIGA side)
+# -----------------------------------------------------------------------------
+[sync]
+led_pin = "TODO_HW"          # GIGA pin driving the sync LED
+led_active_high = true
+flash_ms = 200
+interval_s = 60              # periodic flash between the start and end syncs
+# Offline LED detection in the video: minimum brightness step (0-255) inside the LED ROI.
+video_threshold = 40
+
+[calibration]
+button_pin = "TODO_HW"       # GIGA pin of the calibration button (INFER mode, Stage 3)
+button_active_low = true
+
+# -----------------------------------------------------------------------------
+# Output to the prototype (INFER mode, Stage 3)
+# -----------------------------------------------------------------------------
+[output]
+# The interface to the prototype is not decided yet.
+kind = "TODO_HW"             # e.g. "uart_text"
+uart_baud = 115200
+
+# -----------------------------------------------------------------------------
+# Camera (external USB webcam on Windows)
+# -----------------------------------------------------------------------------
+[camera]
+# OpenCV index of the external webcam. Find it with: python -m tools.camera_preview --list
+index = "TODO_HW"
+backend = "dshow"            # "dshow" or "msmf" on Windows
+width = 1280
+height = 720
+fps = 30
+capture_fourcc = "MJPG"      # most webcams reach 30 fps at 720p only in MJPG mode
+auto_exposure = false
+exposure = -6                # DirectShow units (log2 seconds); tune in the preview
+auto_white_balance = false
+white_balance_k = 4500
+video_fourcc = "mp4v"        # codec of video.mp4
+
+[mediapipe]
+model_path = "models/hand_landmarker.task"
+model_url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
+num_hands = 1
+min_hand_detection_confidence = 0.5
+min_hand_presence_confidence = 0.5
+min_tracking_confidence = 0.5
+
+# -----------------------------------------------------------------------------
+# OpenBCI Cyton through BrainFlow (pilot reference and quality check)
+# -----------------------------------------------------------------------------
+[cyton]
+serial_port = "TODO_HW"      # port of the OpenBCI USB dongle, e.g. "COM3"
+fs_hz = 250
+# Every channel: on, gain 24, normal input, bias included, SRB2 off, SRB1 off.
+channel_command = "x{ch}060100X"
+
+# -----------------------------------------------------------------------------
+# Subject setup
+# -----------------------------------------------------------------------------
+[subject]
+hand = "right"
+hand_orientation = "palm_up"
+
+# -----------------------------------------------------------------------------
+# Session protocol timings (seconds). The trial and ramp orders come from
+# protocol/sequences.json.
+# -----------------------------------------------------------------------------
+[protocol]
+sync_duration_s = 3.0        # "keep still" segment around each LED sync
+sync_flash_offset_s = 1.0    # flash this long after the sync segment starts
+
+cal_rest_s = 10.0
+cal_contraction_grips = ["FIST", "EXTENSION"]
+cal_contraction_reps = 3
+cal_contraction_cue_s = 2.0
+cal_contraction_s = 3.0
+cal_contraction_rest_s = 5.0
+ref_pose_cue_s = 2.0
+ref_pose_s = 5.0
+ref_pose_rest_s = 3.0
+
+trial_cue_s = 1.0
+trial_hold_s = 4.0
+trial_rest_s = 4.0
+trials_per_block = 16
+
+pause_s = 120.0
+
+ramp_intro_s = 3.0           # announce the grip, hand moves to open
+ramp_reps = 4
+ramp_move_s = 2.0
+ramp_hold_s = 2.0
+ramp_rest_s = 3.0
+
+closing_rest_s = 10.0
+
+# -----------------------------------------------------------------------------
+# Quality check (tools/quality_check.py). Thresholds are first guesses,
+# to be tuned on the pilot session.
+# -----------------------------------------------------------------------------
+[quality]
+capture_s = 5.0              # length of each rest / fist capture
+bandpass_hz = [20.0, 450.0]
+line_band_hz = [48.0, 52.0]
+line_share_max = 0.5         # max share of 48-52 Hz power in the 10 Hz..Nyquist band, at rest
+rms_ratio_min = 2.0          # min fist/rest RMS ratio
+min_channels_rms_ok = 6      # channels that must reach rms_ratio_min
+flat_std_uv_max = 0.5        # channel is flat if raw std (DC removed) is below this
+saturation_fraction_max = 0.001
+led_timeout_s = 1.0          # stream must report the LED edge within this time
