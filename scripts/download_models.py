@@ -63,8 +63,8 @@ def recorded_hashes(file_name: str) -> list[tuple[str, str]]:
 def append_row(file_name: str, sha: str, size: int, status: str, url: str) -> None:
     if not MODELS_MD.exists():
         MODELS_MD.parent.mkdir(parents=True, exist_ok=True)
-        MODELS_MD.write_text(HEADER, encoding="utf-8")
-    with open(MODELS_MD, "a", encoding="utf-8") as f:
+        MODELS_MD.write_text(HEADER, encoding="utf-8", newline="\n")
+    with open(MODELS_MD, "a", encoding="utf-8", newline="\n") as f:
         f.write(f"| {file_name} | {date.today().isoformat()} | {sha} | {size} | {status} | {url} |\n")
 
 
