@@ -41,7 +41,7 @@ GRIP_PATTERNS_UV = {
 
 class SyntheticEmg:
     def __init__(self, fs: float, n_channels: int, uv_per_lsb: float, seed: int = 0,
-                 line_uv: float = 15.0, floor_uv: float = 3.0, tau_s: float = 0.06):
+                 line_uv: float = 5.0, floor_uv: float = 3.0, tau_s: float = 0.06):
         self.fs, self.n = fs, n_channels
         self.uv_per_lsb = uv_per_lsb
         self.rng = np.random.default_rng(seed)

@@ -155,7 +155,9 @@ closing_rest_s = 10.0
 capture_s = 5.0              # length of each rest / fist capture
 bandpass_hz = [20.0, 450.0]
 line_band_hz = [48.0, 52.0]
-line_share_max = 0.5         # max share of 48-52 Hz power in the 10 Hz..Nyquist band, at rest
+# Max share of 48-52 Hz power in the 10 Hz..Nyquist band, measured during the fist capture.
+# (At rest the signal is only the noise floor, so the rest share is reported but not judged.)
+line_share_max = 0.2
 rms_ratio_min = 2.0          # min fist/rest RMS ratio
 min_channels_rms_ok = 6      # channels that must reach rms_ratio_min
 flat_std_uv_max = 0.5        # channel is flat if raw std (DC removed) is below this

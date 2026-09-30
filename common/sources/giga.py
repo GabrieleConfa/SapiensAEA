@@ -91,9 +91,14 @@ class GigaSerialSource(EmgSource):
 
     def _reader(self) -> None:
         ser = self._ser
+        # pyserial's socket:// backend reports in_waiting as 0/1 only, so reading in_waiting bytes
+        # would fetch one byte per call; read big chunks with a short timeout instead.
+        is_socket = self.url.startswith("socket://")
+        if is_socket:
+            ser.timeout = 0.005
         try:
             while self._running:
-                data = ser.read(max(1, ser.in_waiting))
+                data = ser.read(65536 if is_socket else max(1, ser.in_waiting))
                 if not data:
                     continue
                 t = time.perf_counter_ns()
