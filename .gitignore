@@ -1,27 +1,47 @@
-# Python
+# --- Python ---------------------------------------------------------------
 .venv/
+venv/
 __pycache__/
-*.pyc
-.pytest_cache/
+*.py[cod]
 *.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# Recorded data and large artefacts
+# --- Recorded data and generated artefacts --------------------------------
 data/
 results/*
 !results/.gitkeep
+*.mp4
+*.avi
 
 # Downloaded models (hash and date are tracked in models/MODELS.md)
 models/*.task
+models/*.part
 
-# Generated firmware config (run scripts/gen_firmware_config.py)
+# Generated firmware header (python -m scripts.gen_firmware_config)
 firmware/emg_giga/config_gen.h
+firmware/**/build/
 
 # Per-setup local files
 config/led_roi.json
 config/*.local.toml
 
-# Editors / OS
+# --- Personal notes and assistant files (kept local) ----------------------
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+TODO*.md
+NOTES*.md
+*.local.md
+
+# --- Editors / OS ---------------------------------------------------------
 .vscode/
 .idea/
+*.swp
+*~
 Thumbs.db
+Desktop.ini
 .DS_Store
