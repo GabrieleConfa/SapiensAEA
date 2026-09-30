@@ -1,0 +1,5 @@
+# Keep LF everywhere: the config SHA-256 stored with results must not depend on the checkout.
+* text=auto eol=lf
+*.bin binary
+*.task binary
+*.mp4 binary
