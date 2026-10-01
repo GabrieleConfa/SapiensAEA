@@ -1,0 +1,12 @@
+[project]
+name = "emgacq"
+version = "0.1.0"
+description = "Guided forearm EMG data acquisition without camera (prototype): OpenBCI Cyton via BrainFlow, swappable source"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: full sessions on the synthetic board or the GIGA simulator (real time, sped up)",
+]

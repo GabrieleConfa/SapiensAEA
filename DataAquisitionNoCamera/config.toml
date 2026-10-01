@@ -1,0 +1,132 @@
+# =============================================================================
+# Data acquisition without camera (prototype) - the single configuration file.
+#
+# Every value that depends on hardware not yet known is set to "TODO_HW".
+# Code that needs such a value refuses to run and names the key to fill in.
+# Paths are relative to this folder.
+# =============================================================================
+
+[paths]
+data_dir = "data"            # one sub-folder per session; git-ignored
+assets_dir = "assets"        # optional gesture images: assets/OPEN.png, CLOSE.png, INDEX.png, REST.png
+
+# -----------------------------------------------------------------------------
+# Data source. --synthetic overrides `source` with "synthetic".
+#   "cyton"     OpenBCI Cyton + RF dongle through BrainFlow (stock firmware)
+#   "synthetic" BrainFlow synthetic board (no hardware), see [synthetic]
+#   "giga"      Arduino GIGA stream of the main project (serial protocol in ../docs)
+#   "giga_sim"  the GIGA simulator of the main project (python -m simulator.giga_sim)
+# -----------------------------------------------------------------------------
+[board]
+source = "cyton"
+# Serial port of the OpenBCI dongle: "COM3" (Windows), "/dev/ttyUSB0" (Linux),
+# "/dev/cu.usbserial-DM00XXXX" (macOS). Can also be given with --port.
+serial_port = "TODO_HW"
+sampling_rate_hz = 250
+# Board channels in use (1-8). The others are powered down.
+channels = [1, 2, 3, 4, 5, 6, 7, 8]
+# Default electrode position of each channel in use; edited per session in the metadata form.
+# TODO_HW: fill in once the electrode positions are fixed.
+channel_positions = ["", "", "", "", "", "", "", ""]
+# Channel in use: on, gain 24, normal input, in BIAS, SRB2 off, SRB1 off (bipolar).
+# Checked against the Cyton SDK: x (CHANNEL, POWER_DOWN, GAIN_SET, INPUT_TYPE_SET, BIAS_SET, SRB2_SET, SRB1_SET) X
+channel_command = "x{ch}060100X"
+# Unused channel: the single characters '1'..'8' turn channels 1-8 off (Cyton SDK).
+power_down_command = "{ch}"
+# ADS1299 full scale at gain 24: Vref / gain = 4.5 V / 24 = 187500 µV.
+full_scale_uv = 187500.0
+read_interval_s = 0.02       # how often the samples are pulled from the source
+
+[giga]
+url = "TODO_HW"              # serial port of the GIGA, e.g. "COM5"
+simulator_url = "socket://localhost:8765"
+sampling_rate_hz = 1000
+n_channels = 8
+repo_root = ".."             # main project, which provides the GIGA serial source
+
+[synthetic]
+# Gesture-dependent EMG-like signal that replaces the BrainFlow synthetic sine waves, so the
+# quality check, the live view and the inspect tool show something meaningful. The package
+# numbers, timestamps and markers still come from the BrainFlow synthetic board.
+emg_model = true
+packet_loss_fraction = 0.001  # simulated radio loss (single samples dropped)
+seed = 0
+
+# -----------------------------------------------------------------------------
+# Session protocol (seconds)
+# -----------------------------------------------------------------------------
+[protocol]
+gestures = ["OPEN", "CLOSE", "INDEX"]
+n_blocks = 2
+trials_per_gesture_per_block = 6
+cue_s = 1.5                  # "Get ready: CLOSE"
+hold_s = 4.0                 # perform and hold
+rest_s = 4.0
+block_pause_min_s = 60.0     # the operator resumes when ready, not before this
+
+calibration_rest_s = 10.0
+calibration_gestures = ["CLOSE", "OPEN"]
+calibration_reps = 3
+calibration_cue_s = 1.5
+calibration_contraction_s = 3.0
+calibration_between_rest_s = 5.0
+
+closing_rest_s = 10.0
+
+# -----------------------------------------------------------------------------
+# Quality check (guided, at the start of the session). Thresholds are first
+# guesses, to be tuned on the pilot session.
+# -----------------------------------------------------------------------------
+[quality]
+reps = 2
+rest_s = 15.0
+cue_s = 1.5
+fist_s = 5.0
+discard_s = 1.0              # skipped at the start of each capture (reaction, settling)
+band_hz = [20.0, 120.0]      # zero-phase band-pass (+ 50/100 Hz notches) before RMS
+line_band_hz = [48.0, 52.0]
+line_share_low_hz = 10.0     # share = power in line_band / power from this to Nyquist
+# Capture on which the 50 Hz share is judged: "rest" or "fist". At rest the signal is only the
+# noise floor, so a few µV of mains already give a high share; both values are always reported.
+line_share_judged_on = "rest"
+line_share_max = 0.3
+rest_rms_max_uv = 10.0       # filtered rest RMS above this = noisy contact or movement
+rms_ratio_min = 2.0          # fist / rest RMS
+min_fraction_channels_ratio_ok = 0.75
+flat_std_uv_max = 0.5        # flat channel: raw std (DC removed) below this
+railed_level = 0.9           # |value| >= this fraction of full scale counts as railed
+railed_fraction_max = 0.001
+packet_loss_max_pct = 1.0
+
+# -----------------------------------------------------------------------------
+# Live monitoring (operator view and gap detection)
+# -----------------------------------------------------------------------------
+[monitor]
+gap_s = 1.0                  # no new samples for longer than this -> pause and alert
+# No new samples for longer than this: the current step is held (not advanced), so that no
+# step starts while the radio link is silent.
+advance_hold_s = 0.25
+display_window_s = 5.0
+display_band_hz = [20.0, 120.0]   # display only; the saved data stay raw
+notch_hz = [50.0, 100.0]
+rms_window_s = 0.25
+flag_window_s = 1.0          # window of the flat / railed flags
+csv_flush_s = 1.0            # emg.csv is flushed at least this often
+
+# -----------------------------------------------------------------------------
+# Screens
+# -----------------------------------------------------------------------------
+[display]
+# "auto": subject view full screen on the second monitor if there is one, otherwise
+# single-screen mode. "single": always single-screen mode. An integer: that screen index.
+subject_screen = "auto"
+font_family = "Segoe UI"
+
+[display.colors]
+OPEN = "#2F80ED"
+CLOSE = "#F2994A"
+INDEX = "#BB6BD9"
+REST = "#6FA8A0"
+TRANSITION = "#E0E0E0"
+PAUSE = "#8A9BA8"
+background = "#15191D"

@@ -1,0 +1,5 @@
+# Recordings never go in git
+data/
+
+# Local config variants
+*.local.toml
