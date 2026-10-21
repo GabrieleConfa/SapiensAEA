@@ -16,8 +16,8 @@ import time
 import traceback
 
 import pyqtgraph as pg
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer
+from PySide6.QtWidgets import QApplication, QDialog, QLineEdit, QMessageBox, QWidget
 
 from emgacq.config import Config
 from emgacq.presentation import status_line, subject_screen
@@ -127,6 +127,13 @@ class Actions:
         except RuntimeError as e:
             self.say(str(e), BAD_COLOR)
 
+    def reviewing_qc(self) -> bool:
+        step = self.ctrl.step
+        return self.ctrl.state == State.RUNNING and step is not None and step.kind == "qc_review"
+
+    def _qc_note(self) -> str:
+        return self.operator.qc_note.text() if self.operator is not None else ""
+
     def handle_key(self, event) -> bool:
         key = event.key()
         if key == Qt.Key_P:
@@ -134,7 +141,12 @@ class Actions:
         elif key == Qt.Key_B:
             self.flag_bad()
         elif key == Qt.Key_Space:
-            self.continue_()
+            if self.reviewing_qc():
+                self.proceed_qc(self._qc_note())
+            else:
+                self.continue_()
+        elif key == Qt.Key_R and self.reviewing_qc():
+            self.repeat_qc(self._qc_note())
         elif key == Qt.Key_Escape:
             self.abort()
         elif key == Qt.Key_O and self.single:
@@ -223,6 +235,36 @@ class Actions:
             ctrl.resume()
 
 
+class OperatorKeys(QObject):
+    """Application-wide key filter for the operator and subject windows.
+
+    The operator keys work whatever widget has the focus (tables, lists and the scale box would
+    otherwise take Space and the letters). A text box keeps its keys while it is being typed in:
+    Enter there = Proceed, Esc leaves it. Dialogs (e.g. the abort confirmation) are not touched.
+    """
+
+    def __init__(self, actions: Actions, windows: tuple[QWidget, ...]):
+        super().__init__()
+        self.actions = actions
+        self.windows = windows
+
+    def eventFilter(self, obj, event) -> bool:
+        if event.type() != QEvent.KeyPress or not isinstance(obj, QWidget):
+            return False
+        if obj.window() not in self.windows or event.isAutoRepeat():
+            return False
+        if isinstance(obj, QLineEdit):
+            if event.key() in (Qt.Key_Return, Qt.Key_Enter) and self.actions.reviewing_qc():
+                self.actions.proceed_qc(obj.text())
+                obj.clearFocus()
+                return True
+            if event.key() == Qt.Key_Escape:
+                obj.clearFocus()
+                return True
+            return False
+        return self.actions.handle_key(event)
+
+
 def _pick_subject_screen(app: QApplication, setting, force_single: bool):
     """(screen for the subject view or None for single-screen mode, description)."""
     screens = app.screens()
@@ -288,6 +330,8 @@ def run_gui(cfg: Config, args, source: SampleSource, kind: str) -> int:
                               on_key=actions.handle_key)
         subject.closeEvent = lambda e: e.accept() if actions.request_close() else e.ignore()
         actions.operator, actions.subject = operator, subject
+        keys = OperatorKeys(actions, (operator, subject))
+        app.installEventFilter(keys)
 
         if args.windowed:
             subject.resize(960, 600)

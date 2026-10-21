@@ -182,15 +182,17 @@ class OperatorWindow(QMainWindow):
         self.qc_table.setFixedHeight(28 + 30 * n)
         v.addWidget(self.qc_table)
         self.qc_note = QLineEdit()
-        self.qc_note.setPlaceholderText("Note (required to proceed after a FAIL)")
+        self.qc_note.setPlaceholderText("Note: click to type (required to proceed after a FAIL); "
+                                        "Enter = Proceed, Esc = stop typing")
         v.addWidget(self.qc_note)
         h = QHBoxLayout()
-        self.btn_qc_proceed = QPushButton("Proceed")
-        self.btn_qc_repeat = QPushButton("Repeat the check")
+        self.btn_qc_proceed = QPushButton("Proceed  [Space]")
+        self.btn_qc_repeat = QPushButton("Repeat the check  [R]")
         self.btn_qc_proceed.clicked.connect(lambda: actions.proceed_qc(self.qc_note.text()))
         self.btn_qc_repeat.clicked.connect(lambda: actions.repeat_qc(self.qc_note.text()))
-        h.addWidget(self.btn_qc_proceed)
-        h.addWidget(self.btn_qc_repeat)
+        for b in (self.btn_qc_proceed, self.btn_qc_repeat):
+            b.setFocusPolicy(Qt.NoFocus)
+            h.addWidget(b)
         v.addLayout(h)
         self.qc_box.setVisible(False)
         right.addWidget(self.qc_box)
@@ -328,7 +330,8 @@ class OperatorWindow(QMainWindow):
         elif ctrl.state == State.PAUSED:
             self.set_banner("Paused. Resume [P] restarts the interrupted step.", WARN_COLOR)
         elif ctrl.step is not None and ctrl.step.kind == "qc_review":
-            self.set_banner("Quality check finished: review the table below.", WARN_COLOR)
+            self.set_banner("Quality check finished: review the table below, then Proceed [Space] "
+                            "or Repeat the check [R].", WARN_COLOR)
         elif ctrl.step is not None and ctrl.step.kind == "block_pause":
             left = ctrl.block_pause_left(now)
             self.set_banner("Pause between blocks. " + (f"Minimum pause: {left:.0f} s left." if left > 0
@@ -354,8 +357,8 @@ class OperatorWindow(QMainWindow):
         if self._qc_shown is rep:
             return
         self._qc_shown = rep
-        passed = rep["result"] == "PASS"
-        self.qc_result.setText(f"<b style='color:{OK_COLOR if passed else BAD_COLOR}'>{rep['result']}</b>"
+        color = {"PASS": OK_COLOR, "NOT_JUDGED": WARN_COLOR}.get(rep["result"], BAD_COLOR)
+        self.qc_result.setText(f"<b style='color:{color}'>{rep['result']}</b>"
                                f" &nbsp; packet loss {rep.get('packet_loss_pct', 0):.2f}%<br>"
                                + "<br>".join(rep["reasons"]))
         for r, ch in enumerate(rep.get("channels", [])):
@@ -368,4 +371,3 @@ class OperatorWindow(QMainWindow):
                 if c == 5:
                     item.setForeground(QColor(OK_COLOR if ch["ok"] else BAD_COLOR))
                 self.qc_table.setItem(r, c, item)
-        self.qc_note.setFocus()

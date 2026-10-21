@@ -1,7 +1,8 @@
 # Lab day - operator checklist
 
 One session ≈ 9 min of protocol (plus the pause you choose and setup). Keys: **P** pause/resume, **B** flag last trial bad,
-**Space** start the next block, **Esc** abort (asks first), **O** operator view (single screen).
+**Space** proceed after the quality check / start the next block, **R** repeat the quality
+check, **Esc** abort (asks first), **O** operator view (single screen).
 
 ## Before the subject arrives
 - [ ] Laptop on mains power, sleep and screen saver off, notifications off.
@@ -30,14 +31,16 @@ One session ≈ 9 min of protocol (plus the pause you choose and setup). Keys: *
       **vary force naturally between light and firm** from trial to trial, never maximal.
 - [ ] **Start session**. The subject follows the screen: rest 15 s, firm comfortable fist 5 s, twice.
 - [ ] Read the table: 50 Hz share, rest RMS, fist/rest ratio, flat/railed, packet loss.
-      **Proceed** on PASS.
+      **Proceed** [Space] on PASS. With `[quality] judge = false` the result is NOT_JUDGED: the
+      findings are only listed and Proceed never needs a note. To type a note, click the note
+      box (Enter = Proceed, Esc = back to the keys).
 
 ## On a FAIL
 - [ ] Find the channel(s) named in the reasons: high 50 Hz share or rest RMS → electrode contact
       or cable movement (re-press/replace the electrode, check the bias/reference); flat → cable
       unplugged or channel off; railed → electrode off the skin; low fist/rest → electrode not
       over an active muscle.
-- [ ] Fix, then **Repeat the check**. To go on anyway, type a note (why) and **Proceed** - the
+- [ ] Fix, then **Repeat the check** [R]. To go on anyway, type a note (why) and **Proceed** - the
       note is saved in `quality_check.json`.
 
 ## Packet loss or disconnection
