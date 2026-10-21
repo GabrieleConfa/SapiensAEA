@@ -23,10 +23,15 @@ def captures(rng, rest_uv=(2, 2, 2, 2), fist_uv=(40, 40, 40, 40), line_uv=0.0):
     return rest, fist
 
 
+def judged(cfg, **over):
+    """The [quality] section with PASS/FAIL on, whatever the local config says."""
+    return {**cfg.section("quality"), "judge": True, **over}
+
+
 def test_pass(cfg):
     rng = np.random.default_rng(1)
     rest, fist = captures(rng)
-    r = evaluate(rest, fist, FS, cfg.section("quality"), 187500.0, NAMES, 0.1)
+    r = evaluate(rest, fist, FS, judged(cfg), 187500.0, NAMES, 0.1)
     assert r["result"] == "PASS", r["reasons"]
     assert all(ch["rms_ratio_fist_rest"] > 10 for ch in r["channels"])
 
@@ -37,7 +42,7 @@ def test_fail_flat_railed_mains_and_loss(cfg):
     for x in rest + fist:
         x[:, 1] = 5.0                 # ch2 flat
         x[::50, 2] = 187500.0         # ch3 railed 2% of the time
-    r = evaluate(rest, fist, FS, cfg.section("quality"), 187500.0, NAMES, 5.0)
+    r = evaluate(rest, fist, FS, judged(cfg), 187500.0, NAMES, 5.0)
     assert r["result"] == "FAIL"
     by = {c["channel"]: c for c in r["channels"]}
     assert by["ch2"]["flat"] and not by["ch2"]["ok"]
@@ -46,12 +51,35 @@ def test_fail_flat_railed_mains_and_loss(cfg):
     assert any("packet loss" in x for x in r["reasons"])
 
 
+def test_mains_share_judged_or_not(cfg):
+    rng = np.random.default_rng(5)
+    rest, fist = captures(rng, line_uv=20.0)
+    q = judged(cfg, line_share_judged_on="rest")
+    r = evaluate(rest, fist, FS, q, 187500.0, NAMES, 0.0)
+    assert r["result"] == "FAIL" and all("50 Hz share" in x for x in r["reasons"])
+    q["line_share_judged_on"] = "none"
+    r = evaluate(rest, fist, FS, q, 187500.0, NAMES, 0.0)
+    assert r["result"] == "PASS", r["reasons"]
+    assert all(ch["line_share_48_52_rest"] > q["line_share_max"] for ch in r["channels"])
+
+
 def test_fail_no_contraction(cfg):
     rng = np.random.default_rng(3)
     rest, fist = captures(rng, fist_uv=(3, 3, 3, 3))
-    r = evaluate(rest, fist, FS, cfg.section("quality"), 187500.0, NAMES, 0.0)
+    r = evaluate(rest, fist, FS, judged(cfg), 187500.0, NAMES, 0.0)
     assert r["result"] == "FAIL"
     assert any("fist/rest" in x for x in r["reasons"])
+
+
+def test_not_judged_reports_but_never_fails(cfg):
+    rng = np.random.default_rng(6)
+    rest, fist = captures(rng, fist_uv=(3, 3, 3, 3), line_uv=20.0)
+    for x in rest + fist:
+        x[:, 1] = 5.0                 # ch2 flat
+    r = evaluate(rest, fist, FS, judged(cfg, judge=False), 187500.0, NAMES, 5.0)
+    assert r["result"] == "NOT_JUDGED"
+    assert any("flat" in x for x in r["reasons"]) and any("packet loss" in x for x in r["reasons"])
+    assert not {c["channel"]: c for c in r["channels"]}["ch2"]["ok"]
 
 
 def test_live_monitor_flags(cfg):

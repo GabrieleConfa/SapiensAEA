@@ -99,7 +99,7 @@ def test_quality_and_summary(session):
     ctrl, s = session
     q = s.quality
     assert q["attempts"] and q["attempts"][-1]["decision"] == "proceed"
-    assert len(q["attempts"][-1]["channels"]) == 8
+    assert len(q["attempts"][-1]["channels"]) == len(s.channel_columns)
     text = (ctrl.folder / "summary.txt").read_text()
     assert "36 of 36" in text and "Bad trials: 3" in text
 

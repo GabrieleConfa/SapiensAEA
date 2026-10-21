@@ -21,13 +21,13 @@ assets_dir = "assets"        # optional gesture images: assets/OPEN.png, CLOSE.p
 source = "cyton"
 # Serial port of the OpenBCI dongle: "COM3" (Windows), "/dev/ttyUSB0" (Linux),
 # "/dev/cu.usbserial-DM00XXXX" (macOS). Can also be given with --port.
-serial_port = "TODO_HW"
+serial_port = "COM3"
 sampling_rate_hz = 250
 # Board channels in use (1-8). The others are powered down.
-channels = [1, 2, 3, 4, 5, 6, 7, 8]
+channels = [1, 2, 3, 4]
 # Default electrode position of each channel in use; edited per session in the metadata form.
 # TODO_HW: fill in once the electrode positions are fixed.
-channel_positions = ["", "", "", "", "", "", "", ""]
+channel_positions = ["", "", "", ""]
 # Channel in use: on, gain 24, normal input, in BIAS, SRB2 off, SRB1 off (bipolar).
 # Checked against the Cyton SDK: x (CHANNEL, POWER_DOWN, GAIN_SET, INPUT_TYPE_SET, BIAS_SET, SRB2_SET, SRB1_SET) X
 channel_command = "x{ch}060100X"
@@ -78,6 +78,9 @@ closing_rest_s = 10.0
 # guesses, to be tuned on the pilot session.
 # -----------------------------------------------------------------------------
 [quality]
+# false: all metrics and findings are still computed and saved, but the check never FAILs and the
+# operator proceeds without a note (result "NOT_JUDGED"). true: PASS/FAIL by the thresholds below.
+judge = false
 reps = 2
 rest_s = 15.0
 cue_s = 1.5
@@ -86,9 +89,10 @@ discard_s = 1.0              # skipped at the start of each capture (reaction, s
 band_hz = [20.0, 120.0]      # zero-phase band-pass (+ 50/100 Hz notches) before RMS
 line_band_hz = [48.0, 52.0]
 line_share_low_hz = 10.0     # share = power in line_band / power from this to Nyquist
-# Capture on which the 50 Hz share is judged: "rest" or "fist". At rest the signal is only the
-# noise floor, so a few µV of mains already give a high share; both values are always reported.
-line_share_judged_on = "rest"
+# Capture on which the 50 Hz share is judged: "rest", "fist" or "none" (not judged). At rest the
+# signal is only the noise floor, so a few µV of mains already give a high share; both values are
+# always reported.
+line_share_judged_on = "none"
 line_share_max = 0.3
 rest_rms_max_uv = 10.0       # filtered rest RMS above this = noisy contact or movement
 rms_ratio_min = 2.0          # fist / rest RMS

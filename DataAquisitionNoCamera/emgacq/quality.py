@@ -59,7 +59,9 @@ def evaluate(rest_runs: list[np.ndarray], fist_runs: list[np.ndarray], fs: float
     share_rest = line_share(rest, fs, lb, q["line_share_low_hz"])
     share_fist = line_share(fist, fs, lb, q["line_share_low_hz"])
     judged_on = q["line_share_judged_on"]
-    share = share_rest if judged_on == "rest" else share_fist
+    if judged_on not in ("rest", "fist", "none"):
+        raise ValueError(f"quality.line_share_judged_on must be 'rest', 'fist' or 'none', got {judged_on!r}")
+    share = {"rest": share_rest, "fist": share_fist}.get(judged_on)
     rest_rms = filtered_rms(rest, fs, band)
     fist_rms = filtered_rms(fist, fs, band)
     ratio = np.divide(fist_rms, rest_rms, out=np.zeros_like(fist_rms), where=rest_rms > 0)
@@ -76,7 +78,7 @@ def evaluate(rest_runs: list[np.ndarray], fist_runs: list[np.ndarray], fs: float
             issues.append("flat")
         if railed[c] > q["railed_fraction_max"]:
             issues.append(f"railed {100 * railed[c]:.2f}%")
-        if share[c] > q["line_share_max"]:
+        if share is not None and share[c] > q["line_share_max"]:
             issues.append(f"50 Hz share {share[c]:.2f}")
         if rest_rms[c] > q["rest_rms_max_uv"]:
             issues.append(f"rest RMS {rest_rms[c]:.1f} µV")
@@ -107,7 +109,9 @@ def evaluate(rest_runs: list[np.ndarray], fist_runs: list[np.ndarray], fs: float
                        f">= {q['rms_ratio_min']} (need {need})")
     if packet_loss_pct > q["packet_loss_max_pct"]:
         reasons.append(f"packet loss {packet_loss_pct:.2f}% > {q['packet_loss_max_pct']}%")
-    return {"result": "FAIL" if reasons else "PASS", "reasons": reasons, "channels": channels,
+    # judge = false: the same findings are reported, but nothing fails (the data are judged later)
+    result = ("FAIL" if reasons else "PASS") if q["judge"] else "NOT_JUDGED"
+    return {"result": result, "reasons": reasons, "channels": channels,
             "packet_loss_pct": round(float(packet_loss_pct), 3),
             "line_share_judged_on": judged_on, "fs": fs,
             "rest_s": round(sum(len(r) for r in rest) / fs, 2),

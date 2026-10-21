@@ -113,7 +113,8 @@ gaps, reconnections, bad trials, interrupted attempts, last quality-check result
 
 `final_result`, `final_note`, and `attempts`: one entry per check with, per channel, the share of
 48-52 Hz power at rest and during the fist, rest and fist RMS (20-120 Hz), fist/rest ratio, flat,
-railed fraction and the issues found; overall `result` with `reasons`, packet loss during the
+railed fraction and the issues found; overall `result` (`PASS`, `FAIL`, or `NOT_JUDGED` when
+`[quality] judge = false`: same findings, nothing fails) with `reasons`, packet loss during the
 check, the thresholds, the operator's `decision` (`proceed` / `repeat`) and `operator_note`
 (required to proceed after a FAIL).
 
