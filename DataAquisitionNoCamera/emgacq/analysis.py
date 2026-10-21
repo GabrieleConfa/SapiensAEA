@@ -91,8 +91,11 @@ def trial_table(s: Session) -> pd.DataFrame:
         rows.append({"trial_id": int(tid), "block": int(g["block"].iloc[0]), "gesture": gesture,
                      "attempts": attempts, "hold_s": round(len(hold) / s.fs, 2), "bad": bad,
                      "complete": bool(len(hold)) and bool((last["phase"] == "REST").any())})
+    # explicit types: with no trial yet (aborted early) the columns would be untyped and a
+    # boolean mask like trials[trials["bad"]] would be read as a column selection
     return pd.DataFrame(rows, columns=["trial_id", "block", "gesture", "attempts", "hold_s",
-                                       "bad", "complete"])
+                                       "bad", "complete"]).astype(
+        {"trial_id": int, "block": int, "attempts": int, "hold_s": float, "bad": bool, "complete": bool})
 
 
 def packet_loss(s: Session) -> dict:
