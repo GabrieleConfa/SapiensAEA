@@ -61,6 +61,8 @@ def subject_screen(ctrl: SessionController, now: float) -> SubjectScreen:
         return SubjectScreen("Relax", "The operator is checking the electrodes", "PAUSE", None, None)
     if k == "block_pause":
         return SubjectScreen("Pause", "Relax. The next block starts when you are ready", "PAUSE", None, None)
+    if k == "free":
+        return SubjectScreen("Recording", "Follow the operator's instructions", "PAUSE", left, None)
     return SubjectScreen("", "", "PAUSE", None, None)
 
 
@@ -79,6 +81,9 @@ def status_line(ctrl: SessionController, now: float) -> str:
         parts.append("NO DATA")
     if ctrl.bad_trials:
         parts.append(f"bad: {','.join(map(str, sorted(ctrl.bad_trials)))}")
-    rem = ctrl.remaining_s(now)
-    parts.append(f"left ~{int(rem // 60)}:{int(rem % 60):02d}")
+    if ctrl.free and not ctrl.duration_s:
+        parts.append("until stopped")
+    else:
+        rem = ctrl.remaining_s(now)
+        parts.append(f"left ~{int(rem // 60)}:{int(rem % 60):02d}")
     return "   |   ".join(parts)

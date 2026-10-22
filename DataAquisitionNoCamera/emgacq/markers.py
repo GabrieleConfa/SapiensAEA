@@ -14,10 +14,11 @@ GESTURES = ("OPEN", "CLOSE", "INDEX")
 GESTURE_CODE = {"OPEN": 1, "CLOSE": 2, "INDEX": 3}
 CODE_GESTURE = {v: k for k, v in GESTURE_CODE.items()}
 
-PHASES = ("QUALITY", "CALIBRATION", "CUE", "HOLD", "REST", "PAUSE")
-LABELS = ("OPEN", "CLOSE", "INDEX", "REST", "TRANSITION")
+PHASES = ("QUALITY", "CALIBRATION", "CUE", "HOLD", "REST", "PAUSE", "FREE")
+LABELS = ("OPEN", "CLOSE", "INDEX", "REST", "TRANSITION", "NONE")
 TRANSITION = "TRANSITION"
 REST = "REST"
+NONE = "NONE"              # free recording: no task, no label
 
 SESSION_END = 2
 SESSION_ABORT = 3
@@ -32,6 +33,7 @@ BLOCK_PAUSE = 40
 OPERATOR_PAUSE = 41
 GAP_PAUSE = 42
 CLOSING_REST = 50
+FREE_RECORDING = 60         # free recording (no protocol): the only step
 
 # Trial markers: 10000 * kind + 100 * trial_id + gesture code, e.g. 20702 = HOLD of trial 7, CLOSE.
 TRIAL_CUE, TRIAL_HOLD, TRIAL_REST = 1, 2, 3
@@ -76,6 +78,7 @@ _FIXED = {
     OPERATOR_PAUSE: MarkerInfo(OPERATOR_PAUSE, "OPERATOR_PAUSE", "PAUSE", TRANSITION),
     GAP_PAUSE: MarkerInfo(GAP_PAUSE, "GAP_PAUSE", "PAUSE", TRANSITION),
     CLOSING_REST: MarkerInfo(CLOSING_REST, "CLOSING_REST", "REST", REST),
+    FREE_RECORDING: MarkerInfo(FREE_RECORDING, "FREE_RECORDING", "FREE", NONE),
 }
 for _g, _c in GESTURE_CODE.items():
     _FIXED[CAL_CUE_BASE + _c] = MarkerInfo(CAL_CUE_BASE + _c, f"CAL_CUE_{_g}", "CALIBRATION",

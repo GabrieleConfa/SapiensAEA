@@ -57,7 +57,8 @@ def report(s: an.Session) -> str:
             n = int(per_trial["gesture"].isin(GESTURES).sum())
             lines.append(f"\nSeparability: leave-one-out nearest-centroid accuracy {100 * acc:.0f}% on "
                          f"{n} trials (chance {100 / per_trial[per_trial['gesture'].isin(GESTURES)]['gesture'].nunique():.0f}%)")
-    lines.append("\nTrials:\n" + trials.to_string(index=False))
+    if s.meta.get("mode") != "free":
+        lines.append("\nTrials:\n" + trials.to_string(index=False))
     return "\n".join(lines)
 
 

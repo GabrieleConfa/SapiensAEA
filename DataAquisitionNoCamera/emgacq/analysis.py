@@ -200,8 +200,11 @@ def summary_text(s: Session) -> str:
         f"in the data: {len(gaps)}" + "".join(f"\n  after sample {g['after_sample']}: {g['gap_s']} s ({g['phase']})" for g in gaps),
         f"Reconnections: {m.get('stats', {}).get('reconnects', 0)}",
         "",
-        "Trials per gesture (complete / bad / usable):",
     ]
+    if m.get("mode") == "free":
+        lines.append("Free recording: no protocol, no trials, no quality check (label NONE).")
+        return "\n".join(lines) + "\n"
+    lines.append("Trials per gesture (complete / bad / usable):")
     for g in GESTURES:
         t = trials[trials["gesture"] == g]
         usable = t[t["complete"] & ~t["bad"]]

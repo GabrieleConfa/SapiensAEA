@@ -83,7 +83,7 @@ class Step:
     index: int
     stage: str             # what the operator sees: "Quality check", "Calibration", "Block 1", ...
     kind: str              # qc_rest qc_cue qc_fist qc_review cal_rest cal_cue cal_hold
-                           # trial_cue trial_hold trial_rest block_pause closing_rest
+                           # trial_cue trial_hold trial_rest block_pause closing_rest; free
     marker: int
     duration_s: float      # 0 for steps that wait for the operator
     gesture: str = ""
@@ -153,6 +153,12 @@ def build_timeline(cfg: Config, order: dict) -> list[Step]:
 
     add(stage="Closing", kind="closing_rest", marker=mk.CLOSING_REST, duration_s=p["closing_rest_s"])
     return steps
+
+
+def build_free_timeline(duration_s: float = 0.0) -> list[Step]:
+    """Free recording: one step, no cues. It ends after `duration_s` (0 = when the operator stops)."""
+    return [Step(index=0, stage="Free recording", kind="free", marker=mk.FREE_RECORDING,
+                 duration_s=float(duration_s or 0.0), wait_operator=True)]
 
 
 def planned_duration_s(steps: list[Step]) -> float:

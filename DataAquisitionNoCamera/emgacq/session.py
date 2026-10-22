@@ -2,6 +2,10 @@
 
 Independent of the GUI: the GUI and the headless runner call `tick()` periodically and the
 command methods (start, pause, resume, proceed_qc, ...) on operator input.
+
+Free recording (`free=True`): no quality check, no calibration, no trials. A single FREE step is
+recorded until the operator stops it (`stop`) or `duration_s` has passed; gaps are logged but do
+not pause anything.
 """
 
 from __future__ import annotations
@@ -19,7 +23,8 @@ from emgacq import markers as mk
 from emgacq.analysis import write_summary
 from emgacq.config import APP_ROOT, Config
 from emgacq.labels import Labeler
-from emgacq.protocol import Step, build_timeline, planned_duration_s, trial_order_from_config
+from emgacq.protocol import (Step, build_free_timeline, build_timeline, planned_duration_s,
+                             trial_order_from_config)
 from emgacq.quality import evaluate
 from emgacq.recorder import Recorder
 from emgacq.sources.base import SampleSource
@@ -48,8 +53,9 @@ def git_commit() -> str | None:
         return None
 
 
-def session_folder(data_dir: Path, subject: str, session: int, when: datetime) -> Path:
-    name = f"{subject}_S{session}_{when:%Y-%m-%d_%H%M}"
+def session_folder(data_dir: Path, subject: str, session: int, when: datetime,
+                   tag: str = "") -> Path:
+    name = f"{subject}_S{session}_{tag + '_' if tag else ''}{when:%Y-%m-%d_%H%M}"
     folder, k = data_dir / name, 2
     while folder.exists():
         folder, k = data_dir / f"{name}_{k}", k + 1
@@ -58,17 +64,25 @@ def session_folder(data_dir: Path, subject: str, session: int, when: datetime) -
 
 class SessionController:
     def __init__(self, cfg: Config, source: SampleSource, recorder: Recorder, metadata: dict,
-                 speed: float = 1.0, data_dir: Path | None = None):
+                 speed: float = 1.0, data_dir: Path | None = None, free: bool = False,
+                 duration_s: float = 0.0):
         self.cfg = cfg
         self.source = source
         self.recorder = recorder
         self.metadata = dict(metadata)
         self.speed = float(speed)
         self.data_dir = Path(data_dir) if data_dir else cfg.path_of("paths.data_dir")
-        self.order = trial_order_from_config(cfg, metadata["subject"], int(metadata["session"]))
-        self.steps: list[Step] = build_timeline(cfg, self.order)
-        self.n_trials = len(self.order["trials"])
-        self.trials_per_block = len(self.order["blocks"][0])
+        self.free = free
+        if free:
+            self.order = None
+            self.steps: list[Step] = build_free_timeline(duration_s)
+            self.n_trials = 0
+            self.trials_per_block = 1
+        else:
+            self.order = trial_order_from_config(cfg, metadata["subject"], int(metadata["session"]))
+            self.steps = build_timeline(cfg, self.order)
+            self.n_trials = len(self.order["trials"])
+            self.trials_per_block = len(self.order["blocks"][0])
         self.gap_s = float(cfg["monitor.gap_s"])
         self.advance_hold_s = float(cfg["monitor.advance_hold_s"])
         self.channel_names = [f"ch{c}" for c in source.channels]
@@ -112,7 +126,12 @@ class SessionController:
         return (now - self.step_start) * self.speed
 
     def qc_start_index(self) -> int:
-        return next(s.index for s in self.steps if s.kind == "qc_rest")
+        return next((s.index for s in self.steps if s.kind == "qc_rest"), -1)
+
+    @property
+    def duration_s(self) -> float:
+        """Free recording: planned length in seconds (0 = until the operator stops)."""
+        return self.steps[0].duration_s if self.free else 0.0
 
     # -- start --------------------------------------------------------------------------------
     def start(self, now: float | None = None) -> Path:
@@ -122,10 +141,12 @@ class SessionController:
         self.started_wall = datetime.now()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.folder = session_folder(self.data_dir, self.metadata["subject"],
-                                     int(self.metadata["session"]), self.started_wall)
+                                     int(self.metadata["session"]), self.started_wall,
+                                     tag="FREE" if self.free else "")
         self.folder.mkdir(parents=True)
-        (self.folder / "trial_order.json").write_text(json.dumps(self.order, indent=2) + "\n",
-                                                      encoding="utf-8")
+        if self.order is not None:
+            (self.folder / "trial_order.json").write_text(json.dumps(self.order, indent=2) + "\n",
+                                                          encoding="utf-8")
         pre_start_events = self.events.rows
         self.events = EventLog(self.folder / "events.csv")
         for row in pre_start_events:
@@ -135,7 +156,11 @@ class SessionController:
         self.labeler = Labeler(self.trials_per_block)
         self.write_session_json("recording")
         self.recorder.start_recording(self.writer, self.labeler, self.events)
-        self.events.log("SESSION_START", detail=f"folder {self.folder.name}, speed {self.speed}")
+        if self.free:
+            mode = "free recording, " + (f"{self.duration_s:g} s" if self.duration_s else "until stopped")
+        else:
+            mode = "protocol"
+        self.events.log("SESSION_START", detail=f"folder {self.folder.name}, {mode}, speed {self.speed}")
         self.state = State.RUNNING
         self.session_start = now
         self._enter(0, now)
@@ -150,6 +175,9 @@ class SessionController:
             if step.kind == "qc_review":
                 if self.qc_report is None and self.recorder.markers_seen >= self._qc_marker_target:
                     self._evaluate_qc()
+            elif step.kind == "free":
+                if step.duration_s and self.step_elapsed(now) >= step.duration_s:
+                    self._finish(now, aborted=False)
             elif (not step.wait_operator and self.step_elapsed(now) >= step.duration_s
                   and self.recorder.seconds_since_last_sample() <= self.advance_hold_s):
                 self._advance(now)     # held while the link is silent: no step starts without data
@@ -310,6 +338,15 @@ class SessionController:
                         detail="flagged by the operator" if bad else "flag removed by the operator")
         return t, bad
 
+    def stop(self, reason: str = "operator", now: float | None = None) -> bool:
+        """Free recording: end it normally (status `completed`)."""
+        now = time.monotonic() if now is None else now
+        if not self.free or self.state != State.RUNNING:
+            return False
+        self.events.log("STOP", sample_index=self.recorder.rows_written, detail=f"stopped: {reason}")
+        self._finish(now, aborted=False)
+        return True
+
     def abort(self, reason: str = "operator", now: float | None = None) -> None:
         now = time.monotonic() if now is None else now
         if self.state in (State.RUNNING, State.PAUSED):
@@ -438,11 +475,12 @@ class SessionController:
             "channels": self.source.channels,
             "csv_channel_columns": self.channel_names,
             "units": "microvolt, raw (unfiltered)",
+            "mode": "free" if self.free else "protocol",
             "speed": self.speed,
-            "seed": self.order["seed"],
-            "protocol": self.cfg.section("protocol"),
-            "quality_thresholds": self.cfg.section("quality"),
-            "planned_duration_s": round(planned_duration_s(self.steps), 1),
+            "seed": self.order["seed"] if self.order else None,
+            "protocol": None if self.free else self.cfg.section("protocol"),
+            "quality_thresholds": None if self.free else self.cfg.section("quality"),
+            "planned_duration_s": round(planned_duration_s(self.steps), 1) or None,
             "config_sha256": self.cfg.sha256,
             "config": self.cfg.as_dict(),
         }
@@ -461,7 +499,9 @@ class SessionController:
 
     # -- status for the views ---------------------------------------------------------------
     def remaining_s(self, now: float) -> float:
-        """Planned time left (real seconds), operator waits excluded except the minimum pause."""
+        """Planned time left (real seconds), operator waits excluded except the minimum pause.
+
+        A free recording without a set duration has no planned end: 0."""
         if self.step is None or self.state in (State.IDLE,):
             return planned_duration_s(self.steps) / self.speed
         if self.state in (State.FINISHING, State.DONE):

@@ -80,6 +80,8 @@ python -m emgacq --port COM3                       # another port
 python -m emgacq --synthetic                       # no hardware: BrainFlow synthetic board
 python -m emgacq --synthetic --speed 10 --windowed # quick look, windows instead of full screen
 python -m emgacq --synthetic --headless --speed 20 --subject T --session 1   # no GUI
+python -m emgacq --free                            # free recording: raw stream, no protocol
+python -m emgacq --free --duration 60              # free recording that stops after 60 s
 python -m tools.inspect_session data/<folder>      # after the session
 ```
 
@@ -93,6 +95,14 @@ python -m tools.inspect_session data/<folder>      # after the session
 4. Calibration and block 1 run by themselves. **B** flags the last trial bad, **P** pauses.
 5. **Pause** between blocks: at least 60 s, then **Space**.
 6. Block 2, closing rest; the files are closed and `summary.txt` is written.
+
+**Free recording** (`--free`). Same form, same channel setup and live view, but no quality
+check, calibration or trials: after **Start recording** the raw stream is saved until **Stop
+recording [Esc]** (or until `--duration` seconds have passed). Every row has phase `FREE` and
+label `NONE`; the folder is `data/<subject>_S<session>_FREE_<YYYY-MM-DD_HHMM>/` and has no
+`trial_order.json` or `quality_check.json`. Gaps are logged but nothing pauses. Use it for
+recordings you want to drive yourself (e.g. testing electrodes, noise floor, ad-hoc gestures);
+`--headless --free` needs `--duration`.
 
 **Screens.** With a second monitor the subject view goes full screen there (`[display]
 subject_screen`). With only the laptop screen: the operator view during setup, quality-check
@@ -116,7 +126,9 @@ the key. Currently open: `board.serial_port`, `board.channel_positions`, `giga.u
 
 `data/<subject>_S<session>_<YYYY-MM-DD_HHMM>/`: `emg.csv` (one row per sample: raw µV, BrainFlow
 timestamp, package number, marker, phase, label, block, trial, bad flag), `events.csv`,
-`session.json`, `quality_check.json`, `trial_order.json`, `summary.txt`. Details and the marker
+`session.json`, `quality_check.json`, `trial_order.json`, `summary.txt`. Free recordings:
+`data/<subject>_S<session>_FREE_<YYYY-MM-DD_HHMM>/`, without the quality-check and trial-order
+files. The saved channels are never filtered by this program. Details and the marker
 code table: [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md).
 
 ## Adding a source (e.g. the Arduino PCB)

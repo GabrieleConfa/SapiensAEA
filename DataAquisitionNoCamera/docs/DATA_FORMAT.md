@@ -2,6 +2,8 @@
 
 One folder per session: `data/<subject>_S<session>_<YYYY-MM-DD_HHMM>/` (a second folder in the
 same minute gets `_2`). The folder is created when the operator presses **Start session**.
+A free recording (`--free`, no protocol) goes to `data/<subject>_S<session>_FREE_<YYYY-MM-DD_HHMM>/`
+and has no `trial_order.json` or `quality_check.json`.
 
 | File                 | Written                                    | Content                                       |
 |----------------------|--------------------------------------------|-----------------------------------------------|
@@ -26,8 +28,8 @@ bad-trial flags from `events.csv` itself.
 | `package_num`   | board package counter (Cyton and synthetic: 0-255, wraps; GIGA: sample counter). A step > 1 = lost samples; it restarts after a reconnection |
 | `ch<k>`         | raw µV of board channel k (only the channels in use), unfiltered                          |
 | `marker`        | 0, or the marker code that starts at this sample (table below)                           |
-| `phase`         | `QUALITY` `CALIBRATION` `CUE` `HOLD` `REST` `PAUSE`                                      |
-| `label`         | `OPEN` `CLOSE` `INDEX` `REST` `TRANSITION`                                               |
+| `phase`         | `QUALITY` `CALIBRATION` `CUE` `HOLD` `REST` `PAUSE`; `FREE` in a free recording          |
+| `label`         | `OPEN` `CLOSE` `INDEX` `REST` `TRANSITION`; `NONE` in a free recording                   |
 | `block`         | 1 or 2 during trials, else 0                                                             |
 | `trial_id`      | 1-36 during a trial (cue, hold, rest), else 0                                            |
 | `trial_bad`     | 1 for the trials the operator flagged bad and for interrupted attempts, else 0 (set when the session closes) |
@@ -82,6 +84,7 @@ codes: OPEN = 1, CLOSE = 2, INDEX = 3. `python -m emgacq.markers` prints this ta
 | 41     | OPERATOR_PAUSE   | PAUSE       | TRANSITION |
 | 42     | GAP_PAUSE        | PAUSE       | TRANSITION |
 | 50     | CLOSING_REST     | REST        | REST       |
+| 60     | FREE_RECORDING   | FREE        | NONE       |
 | 1TTgg  | TRIAL_CUE        | CUE         | TRANSITION |
 | 2TTgg  | TRIAL_HOLD       | HOLD        | \<g\>      |
 | 3TTgg  | TRIAL_REST       | REST        | REST       |
@@ -97,7 +100,7 @@ few samples later, on the next packet). Events: the marker names above, plus `SE
 `PAUSE`, `RESUME`, `GAP_START`, `GAP_END`, `RECONNECT_START/OK/FAILED`, `PACKET_LOSS` (at most one
 row per second), `QC_RESULT`, `QC_PROCEED`, `QC_REPEAT`, `TRIAL_BAD`, `TRIAL_BAD_UNDO`,
 `BLOCK_PAUSE_END`, `BOARD_CONFIG` (each channel command and the board reply), `DISPLAY`,
-`BAD_ROWS_UPDATED`, `SESSION_CLOSED`, `ERROR`.
+`BAD_ROWS_UPDATED`, `SESSION_CLOSED`, `ERROR`, `STOP` (free recording stopped by the operator).
 
 ## session.json
 
@@ -106,7 +109,8 @@ elbow), forearm length (cm), channel map (channel, CSV column, position), electr
 source (board, port, sampling rate, channels, full scale, every configuration command with the
 board's reply); protocol timings, quality thresholds, seed, speed factor, planned duration; the
 whole config and its SHA-256; app version, git commit, Python and OS; status (`recording`,
-`completed`, `aborted`), start and end time; at the end, stats (rows, packets received and lost,
+`completed`, `aborted`), `mode` (`protocol` or `free`; in a free recording `protocol`,
+`quality_thresholds` and `seed` are `null`), start and end time; at the end, stats (rows, packets received and lost,
 gaps, reconnections, bad trials, interrupted attempts, last quality-check result).
 
 ## quality_check.json

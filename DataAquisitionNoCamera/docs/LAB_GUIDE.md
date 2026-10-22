@@ -69,6 +69,11 @@ Before the start, during the quality-check review and on a data gap, the operato
 the screen - turn the laptop away from the subject. During the protocol the subject sees only the
 task, and the operator a text strip at the bottom (no signals).
 
+## Free recording (no protocol)
+`python -m emgacq --free` (optionally `--duration 60`): same form and live view, then **Start
+recording**; the subject view only says "Recording", so give the instructions yourself and write
+what was done in the notes (rows carry no gesture label). **Stop recording [Esc]** closes the files.
+
 ## After the session
 - [ ] `python -m tools.inspect_session data/<folder>`: trials per gesture, losses, gaps, and the
       plots in `<folder>/inspect/` - the gestures should differ in RMS on several channels.

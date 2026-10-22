@@ -5,6 +5,7 @@ One screen: the operator view is shown before the start, during the quality-chec
 data gap and at the end; during the protocol the subject view fills the screen, with a thin text
 status strip for the operator (no signals). The operator view can be brought back with O while
 the protocol waits (paused, between blocks, quality-check review).
+Free recording (--free): no cues; the operator view stays visible, Esc stops the recording.
 """
 
 from __future__ import annotations
@@ -110,6 +111,10 @@ class Actions:
             return
         if self.ctrl.state not in (State.RUNNING, State.PAUSED):
             return
+        if self.ctrl.free:
+            if not confirm or self._confirm("Stop the recording?", "The files are closed and kept."):
+                self.ctrl.stop("operator")
+            return
         if confirm and not self._confirm("Abort the session?",
                                          "The data recorded so far are kept and the session is marked aborted."):
             return
@@ -161,9 +166,11 @@ class Actions:
     def request_close(self) -> bool:
         """A window is being closed: abort a running session (after confirmation) and quit."""
         if self.ctrl.state in (State.RUNNING, State.PAUSED):
-            if not self._confirm("Abort the session and quit?", "The data recorded so far are kept."):
+            if not self._confirm("Stop the recording and quit?" if self.ctrl.free else
+                                 "Abort the session and quit?", "The data recorded so far are kept."):
                 return False
-            self.ctrl.abort("window closed")
+            if not self.ctrl.stop("window closed"):
+                self.ctrl.abort("window closed")
         self.quit_reason = "window closed"
         return True
 
@@ -207,7 +214,7 @@ class Actions:
 
     def _single_screen_layout(self) -> None:
         ctrl = self.ctrl
-        need = (ctrl.state in (State.IDLE, State.DONE) or ctrl.gap_active or self.show_operator
+        need = (ctrl.free or ctrl.state in (State.IDLE, State.DONE) or ctrl.gap_active or self.show_operator
                 or (ctrl.step is not None and ctrl.step.kind == "qc_review" and ctrl.state == State.RUNNING))
         if ctrl.state == State.RUNNING and ctrl.step is not None and not ctrl.step.wait_operator:
             self.show_operator = False
@@ -292,6 +299,9 @@ def run_gui(cfg: Config, args, source: SampleSource, kind: str) -> int:
     source_text = f"{kind}" + (f" on {where}" if where else "")
     if kind == "cyton":
         source_text += f". {GUI_HINT}"
+    if args.free:
+        source_text += ("<br><b>Free recording</b> (no protocol), "
+                        + (f"{args.duration:g} s." if args.duration else "until stopped."))
     if not args.auto:
         dlg = MetadataDialog(meta, source_text)
         if dlg.exec() != QDialog.Accepted:
@@ -312,7 +322,8 @@ def run_gui(cfg: Config, args, source: SampleSource, kind: str) -> int:
 
     recorder = Recorder(source, float(cfg["board.read_interval_s"]))
     recorder.start()
-    ctrl = SessionController(cfg, source, recorder, meta, speed=args.speed)
+    ctrl = SessionController(cfg, source, recorder, meta, speed=args.speed, free=args.free,
+                             duration_s=args.duration)
     for c in source.command_log:
         ctrl.events.log("BOARD_CONFIG", detail=f"{c['command']!r} -> {c['reply']!r}")
     try:

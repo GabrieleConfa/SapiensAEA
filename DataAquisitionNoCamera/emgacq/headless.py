@@ -34,10 +34,15 @@ class Script:
 
 
 def run_headless(cfg: Config, source: SampleSource, metadata: dict, speed: float = 1.0,
-                 script: Script | None = None, data_dir=None, log=print) -> SessionController:
+                 script: Script | None = None, data_dir=None, log=print, free: bool = False,
+                 duration_s: float = 0.0) -> SessionController:
+    """`free=True`: free recording of `duration_s` seconds (required, > 0) instead of the protocol."""
+    if free and not duration_s > 0:
+        raise ValueError("a headless free recording needs a duration")
     script = script or Script()
     recorder = Recorder(source, float(cfg["board.read_interval_s"]))
-    ctrl = SessionController(cfg, source, recorder, metadata, speed=speed, data_dir=data_dir)
+    ctrl = SessionController(cfg, source, recorder, metadata, speed=speed, data_dir=data_dir,
+                             free=free, duration_s=duration_s)
     done_events: set[str] = set()
     try:
         log(f"connecting to {source.kind} ...")

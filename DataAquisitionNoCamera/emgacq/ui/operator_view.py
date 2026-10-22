@@ -166,6 +166,11 @@ class OperatorWindow(QMainWindow):
             b.setFocusPolicy(Qt.NoFocus)
             g.addWidget(b, 5 + i // 2, i % 2)
         self.btn_bad.setStyleSheet("font-weight: bold;")
+        if ctrl.free:
+            self.btn_start.setText("Start recording")
+            self.btn_abort.setText("Stop recording  [Esc]")
+            for b in (self.btn_pause, self.btn_continue, self.btn_bad):
+                b.setVisible(False)
         right.addWidget(sess)
 
         self.qc_box = QGroupBox("Quality check")
@@ -278,7 +283,9 @@ class OperatorWindow(QMainWindow):
         self.lbl_state.setText(ctrl.state.value + (f" ({ctrl.pause_reason})" if ctrl.state == State.PAUSED else ""))
         if step is not None and ctrl.state not in (State.IDLE,):
             self.lbl_stage.setText(f"{step.stage} / {step.kind}" + (f" {step.gesture}" if step.gesture else ""))
-            if step.trial_id:
+            if ctrl.free:
+                self.lbl_trial.setText("- (free recording)")
+            elif step.trial_id:
                 in_block = (step.trial_id - 1) % ctrl.trials_per_block + 1
                 self.lbl_trial.setText(f"block {step.block}, trial {in_block}/{ctrl.trials_per_block} "
                                        f"(id {step.trial_id}), {step.gesture}")
@@ -287,7 +294,8 @@ class OperatorWindow(QMainWindow):
         else:
             self.lbl_stage.setText("not started")
             self.lbl_trial.setText(f"0 of {ctrl.n_trials}")
-        self.lbl_time.setText(f"{_mmss(ctrl.elapsed_s(now))} / ~{_mmss(ctrl.remaining_s(now))}")
+        left = "until stopped" if ctrl.free and not ctrl.duration_s else f"~{_mmss(ctrl.remaining_s(now))}"
+        self.lbl_time.setText(f"{_mmss(ctrl.elapsed_s(now))} / {left}")
         self.lbl_bad.setText(", ".join(map(str, sorted(ctrl.bad_trials))) or "none")
 
         running = ctrl.state in (State.RUNNING, State.PAUSED)
@@ -324,9 +332,14 @@ class OperatorWindow(QMainWindow):
                             BAD_COLOR)
         elif self.actions.message:
             self.set_banner(self.actions.message, self.actions.message_color)
+        elif ctrl.state == State.IDLE and ctrl.free:
+            self.set_banner("Free recording: check the signals, then Start recording.", None)
         elif ctrl.state == State.IDLE:
             self.set_banner("Check the signals, then Start session. The subject view shows 'Please wait'.",
                             None)
+        elif ctrl.free and ctrl.state == State.RUNNING:
+            self.set_banner("Free recording: the raw stream is being saved, no labels. "
+                            "Stop recording [Esc] ends it.", OK_COLOR)
         elif ctrl.state == State.PAUSED:
             self.set_banner("Paused. Resume [P] restarts the interrupted step.", WARN_COLOR)
         elif ctrl.step is not None and ctrl.step.kind == "qc_review":
