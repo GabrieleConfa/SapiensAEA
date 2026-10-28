@@ -34,6 +34,7 @@ class BrainFlowSource(SampleSource):
         self._rng = np.random.default_rng(int(self.synthetic.get("seed", 0)) + 1)
         self._stall_until = 0.0
         self._stalled_markers: list[float] = []
+        self.zero_rows_dropped = 0
 
     # -- connection -------------------------------------------------------------------------
     def connect(self) -> dict:
@@ -75,7 +76,8 @@ class BrainFlowSource(SampleSource):
                      "fs": self.fs, "channels": self.channels, "full_scale_uv": self.full_scale_uv,
                      "package_modulus": self.package_modulus,
                      "commands": list(self.command_log),
-                     "synthetic_emg_model": self._sim is not None}
+                     "synthetic_emg_model": self._sim is not None,
+                     "zero_rows_dropped": self.zero_rows_dropped}
         return self.info
 
     def _configure_channels(self, board, n_board_channels: int) -> None:
@@ -124,6 +126,16 @@ class BrainFlowSource(SampleSource):
                 keep = (self._rng.random(len(marker)) >= p) | (marker != 0)
                 data, marker = data[:, keep], marker[keep]
         uv = data[self._rows_uv].T
+        if self.kind == "cyton":
+            # after a (re)start the Cyton stream can deliver a sample with every channel at exactly
+            # 0 µV (seen after both reconnections of 2026-10-21): not a measurement - the electrode
+            # offsets alone are mV - so it is dropped (unless it carries a marker)
+            invalid = (uv == 0).all(axis=1) & (marker == 0)
+            if invalid.any():
+                self.zero_rows_dropped += int(invalid.sum())
+                self.info["zero_rows_dropped"] = self.zero_rows_dropped
+                keep = ~invalid
+                data, marker, uv = data[:, keep], marker[keep], uv[keep]
         if self._sim is not None:
             uv = self._sim.generate(marker)
         return Chunk(data[self._row_ts], data[self._row_pkg], uv, marker)

@@ -107,6 +107,10 @@ def packet_loss(s: Session) -> dict:
     steps = np.diff(pk)
     if mod:
         steps = steps % int(mod)
+        # across a gap longer than one counter cycle (a long stall, a reconnection that restarts
+        # the counter) the counter cannot tell what is missing: that is a gap (time_gaps), not loss
+        dt = np.diff(s.emg["timestamp"].to_numpy(float))
+        steps[dt > (int(mod) - 1) / s.fs] = 1
     else:
         steps = np.where(steps < 0, 1, steps)
     lost_each = np.where(steps > 1, steps - 1, 0)

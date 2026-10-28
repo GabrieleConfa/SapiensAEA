@@ -107,7 +107,8 @@ row per second), `QC_RESULT`, `QC_PROCEED`, `QC_REPEAT`, `TRIAL_BAD`, `TRIAL_BAD
 Subject, session, day, role (`train`/`test`), arm, band position (% of forearm length from the
 elbow), forearm length (cm), channel map (channel, CSV column, position), electrode type, notes;
 source (board, port, sampling rate, channels, full scale, every configuration command with the
-board's reply); protocol timings, quality thresholds, seed, speed factor, planned duration; the
+board's reply, and for the Cyton `zero_rows_dropped`: samples with every channel at exactly 0 µV,
+which the stream can deliver right after a (re)start and which are not written); protocol timings, quality thresholds, seed, speed factor, planned duration; the
 whole config and its SHA-256; app version, git commit, Python and OS; status (`recording`,
 `completed`, `aborted`), `mode` (`protocol` or `free`; in a free recording `protocol`,
 `quality_thresholds` and `seed` are `null`), start and end time; at the end, stats (rows, packets received and lost,

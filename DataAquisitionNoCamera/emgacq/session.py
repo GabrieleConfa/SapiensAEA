@@ -374,8 +374,13 @@ class SessionController:
             self.events.log("RECONNECT_FAILED", sample_index=self.recorder.rows_written, detail=str(e))
             raise
         self.reconnects += 1
+        # markers still queued in the old board session never reach the stream: count only the
+        # ones seen, or the quality check (which waits for all its markers) would wait forever
+        lost_markers = self.markers_inserted - self.recorder.markers_seen
+        self.markers_inserted = self.recorder.markers_seen
         self.events.log("RECONNECT_OK", sample_index=self.recorder.rows_written,
-                        detail=f"package counter reset; reconnection {self.reconnects}")
+                        detail=f"package counter reset; reconnection {self.reconnects}"
+                               + (f"; {lost_markers} queued marker(s) lost" if lost_markers > 0 else ""))
         if self.state == State.PAUSED:
             # markers still queued in the old board session are lost with it: stamp the pause again
             code = mk.GAP_PAUSE if self.pause_reason == "gap" else mk.OPERATOR_PAUSE
