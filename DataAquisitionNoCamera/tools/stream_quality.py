@@ -117,10 +117,11 @@ ADVICE = {
                "tape the cables down.",
     "snr": "Weak EMG: the gestures barely raise this channel above rest. Check that the electrodes "
            "lie over an active muscle (a channel may legitimately stay quiet for some gestures).",
-    "corr": "Channels strongly correlated at rest: a common interference, or electrodes too close / "
-            "gel bridging two sites. A strongly negative correlation suggests the two channels "
-            "share an electrode (or a wire) with opposite polarity: check the wiring of the N/P "
-            "inputs. Check the spacing and dry the skin between electrodes.",
+    "corr": "Channels correlated at rest: most often a common-mode signal (weak BIAS) leaking "
+            "through unequal electrode impedances; the sign (+ or -) only says which electrode of "
+            "each pair has the higher impedance. Check the BIAS electrode first. If the same pair "
+            "correlates in every session, even after re-applying the electrodes, suspect the "
+            "wiring or gel bridging two sites instead.",
 }
 
 
