@@ -163,7 +163,9 @@ class Recording:
     label: np.ndarray
     bad: np.ndarray           # trial_bad
     centered: np.ndarray      # raw minus its segment median (plots)
-    emg: np.ndarray           # 20-120 Hz band-pass + mains notches (NaN outside long segments)
+    notched: np.ndarray       # raw with the mains notched, nothing else (pops: a large mains wave
+                              # plus strong EMG would otherwise look like jumps)
+    emg: np.ndarray          # 20-120 Hz band-pass + mains notches (NaN outside long segments)
     low: np.ndarray           # 1-15 Hz
     mains_pow: np.ndarray     # 48-52 Hz power minus the neighbouring bands (instantaneous)
 
@@ -231,12 +233,14 @@ def load(folder: str | Path | None = None, thresholds: dict | None = None) -> Re
     m = th["mains_hz"]
     notches = tuple(f for f in (m, 2 * m) if f < 0.48 * fs)
     nan = np.full_like(raw, np.nan)
-    centered, emg, low, mains_pow = nan.copy(), nan.copy(), nan.copy(), nan.copy()
+    centered, notched, emg, low, mains_pow = (nan.copy() for _ in range(5))
+    notch_sos = np.vstack([signal.tf2sos(*signal.iirnotch(f0, Q=30.0, fs=fs)) for f0 in notches])
     for a, b in segments:
         x = raw[a:b]
         centered[a:b] = x - np.median(x, axis=0)
         if b - a < MIN_SEGMENT_S * fs:
             continue
+        notched[a:b] = signal.sosfiltfilt(notch_sos, x - x.mean(axis=0), axis=0)
         emg[a:b] = filtfilt(x, fs, EMG_BAND, notches)
         low[a:b] = _bandpass(x, fs, *LOWFREQ_BAND)
         line = _bandpass(x, fs, m - 2, m + 2, 2)
@@ -248,7 +252,7 @@ def load(folder: str | Path | None = None, thresholds: dict | None = None) -> Re
         valid=valid, segments=segments, seg=seg,
         phase=s.emg["phase"].astype(str).to_numpy(dtype=str),
         label=s.emg["label"].astype(str).to_numpy(dtype=str),
-        bad=s.emg["trial_bad"].to_numpy(int), centered=centered, emg=emg, low=low,
+        bad=s.emg["trial_bad"].to_numpy(int), centered=centered, notched=notched, emg=emg, low=low,
         mains_pow=mains_pow)
 
 
@@ -302,7 +306,7 @@ def windows(rec: Recording) -> Windows:
                 np.sqrt(np.maximum(0.0, np.mean(rec.mains_pow[a:b], axis=0))),
                 x.std(axis=0),
                 x.mean(axis=0),
-                np.abs(np.diff(x, axis=0)).max(axis=0) if b - a > 1 else np.zeros(x.shape[1]),
+                np.abs(np.diff(rec.notched[a:b], axis=0)).max(axis=0) if b - a > 1 else np.zeros(x.shape[1]),
                 np.mean(np.abs(x) >= th["railed_level"] * rec.full_scale_uv, axis=0),
             ))
     names = ("emg_rms", "lowfreq_rms", "mains_rms", "raw_std", "raw_mean", "max_jump", "railed")
@@ -534,7 +538,7 @@ def analyze(rec_or_folder: Recording | str | Path | None = None, thresholds: dic
         x = rec.raw[a:b]
         dc_seg.append(np.median(x, axis=0))
         if b - a > 1:
-            jump = np.abs(np.diff(x, axis=0)) > th["pop_uv"]
+            jump = np.abs(np.diff(rec.notched[a:b], axis=0)) > th["pop_uv"]
             for c in range(nc):
                 idx = np.flatnonzero(jump[:, c])
                 if idx.size:   # jumps closer than 0.1 s are one pop

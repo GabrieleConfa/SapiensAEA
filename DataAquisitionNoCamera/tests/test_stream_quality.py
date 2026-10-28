@@ -9,7 +9,7 @@ FS = 250.0
 
 
 def _session(folder, n_s=80, seed=0):
-    """Labelled session with known defects: ch1 clean, ch2 mains, ch3 flat, ch4 pops; a lost run
+    """Labelled session with known defects: ch1 clean, ch2 strong mains, ch3 flat, ch4 pops; a lost run
     of 3 samples, an 11 s gap after a reconnection that restarts the counter on an all-zero row."""
     rng = np.random.default_rng(seed)
     n = int(n_s * FS)
@@ -19,7 +19,7 @@ def _session(folder, n_s=80, seed=0):
     noise = rng.normal(0, 2.0, (n, 4))
     burst = rng.normal(0, 40.0, (n, 4)) * (label == "CLOSE")[:, None]
     x = noise + burst + np.array([20000.0, -3000.0, 5000.0, 1000.0])
-    x[:, 1] += 80 * np.sqrt(2) * np.sin(2 * np.pi * 50 * t)
+    x[:, 1] += 500 * np.sqrt(2) * np.sin(2 * np.pi * 50 * t)   # mains as large as on 2026-10-28
     x[:, 2] = 5000.0 + rng.normal(0, 0.05, n)
     for k in (5, 25, 45, 65):
         x[int(k * FS):, 3] += 3000.0
@@ -53,7 +53,8 @@ def test_defects_are_found(tmp_path):
     assert link["segments"] == 2
     ch = rep.channels.set_index("channel")
     assert ch.loc["ch1", "status"] == "GOOD", rep.problems["ch1"]
-    assert abs(ch.loc["ch2", "mains_rest_uV"] - 80) < 8
+    assert abs(ch.loc["ch2", "mains_rest_uV"] - 500) < 30
+    assert ch.loc["ch2", "pops"] == 0            # a large mains wave plus EMG is not a pop
     assert ch.loc["ch2", "status"] == "BAD"
     assert "flat" in {code for _, code, _ in rep.problems["ch3"]}
     assert ch.loc["ch4", "pops"] == 4
