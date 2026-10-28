@@ -28,7 +28,8 @@ emgacq/              the application (python -m emgacq)
   session.py         session controller         recorder.py acquisition thread
   writer.py          emg.csv / events.csv       quality.py  quality-check metrics
   ui/                metadata form, subject view, operator view (PySide6 + pyqtgraph)
-tools/inspect_session.py   check a recorded session
+tools/inspect_session.py   check a recorded session (trials, RMS per gesture, plots)
+tools/stream_quality.py    is the stream good, noisy or disturbed? (+ stream_quality.ipynb)
 docs/DATA_FORMAT.md  files, columns, marker codes      docs/LAB_GUIDE.md  operator checklist
 tests/               pytest suite (includes full sessions on the synthetic board)
 data/                recordings (git-ignored)
@@ -83,6 +84,8 @@ python -m emgacq --synthetic --headless --speed 20 --subject T --session 1   # n
 python -m emgacq --free                            # free recording: raw stream, no protocol
 python -m emgacq --free --duration 60              # free recording that stops after 60 s
 python -m tools.inspect_session data/<folder>      # after the session
+python -m tools.stream_quality [data/<folder>]     # stream quality verdict (default: latest)
+python -m tools.stream_quality --all               # one line per session
 ```
 
 1. **Form**: subject ID, session number, day, role, arm, band position, forearm length, channel

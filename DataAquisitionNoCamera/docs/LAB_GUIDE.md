@@ -77,4 +77,8 @@ what was done in the notes (rows carry no gesture label). **Stop recording [Esc]
 ## After the session
 - [ ] `python -m tools.inspect_session data/<folder>`: trials per gesture, losses, gaps, and the
       plots in `<folder>/inspect/` - the gestures should differ in RMS on several channels.
+- [ ] `python -m tools.stream_quality` (or the notebook `tools/stream_quality.ipynb`): verdict
+      on the link and on each channel (50 Hz, noise floor, pops, movement artifacts, EMG
+      strength) with advice. A quick free recording (`--free --duration 60`: 20 s rest, then a
+      few fists) checked this way is a fast test of the electrodes before a full session.
 - [ ] Copy `data/<folder>` to the backup location.

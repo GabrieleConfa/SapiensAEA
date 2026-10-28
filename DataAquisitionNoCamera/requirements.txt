@@ -8,3 +8,4 @@ pyqtgraph==0.14.0
 matplotlib==3.11.2      # tools/inspect_session.py plots
 pyserial==3.5           # serial-port check before connecting; GIGA source
 pytest==9.1.1
+ipykernel==7.4.0       # tools/stream_quality.ipynb (VS Code / Jupyter kernel)
