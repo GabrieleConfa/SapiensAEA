@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import os
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -103,10 +104,14 @@ def mark_bad_trials(path: Path, trial_ids: set[int] | list[int],
 
 
 class EventLog:
-    """events.csv: one row per event, flushed immediately. Rows are also kept in memory."""
+    """events.csv: one row per event, flushed immediately. Rows are also kept in memory.
+
+    Thread-safe: the GUI, the recorder thread (packet loss) and the reconnection worker all log.
+    """
 
     def __init__(self, path: Path | None):
         self.rows: list[dict] = []
+        self._lock = threading.Lock()
         self._f = None
         if path is not None:
             self._f = open(path, "w", newline="", encoding="utf-8")
@@ -123,12 +128,14 @@ class EventLog:
                "sample_index": "" if sample_index is None else sample_index,
                "marker": "" if marker is None else marker, "event": event, "phase": phase,
                "gesture": gesture, "block": block, "trial_id": trial_id, "detail": detail}
-        self.rows.append(row)
-        if self._f is not None and not self._f.closed:
-            self._w.writerow(row)
-            self._f.flush()
+        with self._lock:
+            self.rows.append(row)
+            if self._f is not None and not self._f.closed:
+                self._w.writerow(row)
+                self._f.flush()
         return row
 
     def close(self) -> None:
-        if self._f is not None and not self._f.closed:
-            self._f.close()
+        with self._lock:
+            if self._f is not None and not self._f.closed:
+                self._f.close()
