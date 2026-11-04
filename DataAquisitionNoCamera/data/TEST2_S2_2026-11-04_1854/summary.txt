@@ -1,0 +1,21 @@
+Session TEST2_S2_2026-11-04_1854  (completed)
+Subject TEST2, session 2, day 1, role train, arm right
+Source: cyton at 250 Hz, channels ch1, ch2, ch3, ch4
+Started 2026-11-04T18:54:44, ended 2026-11-04T19:04:44
+Duration: 9 min 59.8 s of data, 150188 samples (250.4 samples/s)
+Packet loss: 0 samples lost (0.000%) in 0 events
+Gaps over 1 s in the data: 0
+Reconnections: 0
+
+Trials per gesture (complete / bad / usable):
+  OPEN    12 /  0 /  12
+  CLOSE   12 /  0 /  12
+  INDEX   12 /  0 /  12
+Bad trials: none
+Trials repeated after a pause: none
+Trials recorded: 36 of 36 planned
+
+Quality check: NOT_JUDGED (attempt 1, 1 in total), decision: proceed
+  - ch1: rest RMS 47.7 µV
+  - ch2: rest RMS 65.1 µV
+  - ch4: rest RMS 14.0 µV

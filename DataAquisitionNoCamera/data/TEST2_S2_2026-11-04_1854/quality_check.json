@@ -1,0 +1,110 @@
+{
+  "final_result": "NOT_JUDGED",
+  "final_note": "",
+  "attempts": [
+    {
+      "result": "NOT_JUDGED",
+      "reasons": [
+        "ch1: rest RMS 47.7 \u00b5V",
+        "ch2: rest RMS 65.1 \u00b5V",
+        "ch4: rest RMS 14.0 \u00b5V"
+      ],
+      "channels": [
+        {
+          "channel": "ch1",
+          "line_share_48_52_rest": 0.9981,
+          "line_share_48_52_fist": 0.9911,
+          "rest_rms_uv": 47.69,
+          "fist_rms_uv": 119.473,
+          "rms_ratio_fist_rest": 2.505,
+          "rms_ratio_ok": true,
+          "flat": false,
+          "railed_fraction": 0.0,
+          "ok": false,
+          "issues": [
+            "rest RMS 47.7 \u00b5V"
+          ]
+        },
+        {
+          "channel": "ch2",
+          "line_share_48_52_rest": 0.9976,
+          "line_share_48_52_fist": 0.9996,
+          "rest_rms_uv": 65.114,
+          "fist_rms_uv": 129.934,
+          "rms_ratio_fist_rest": 1.995,
+          "rms_ratio_ok": false,
+          "flat": false,
+          "railed_fraction": 0.0,
+          "ok": false,
+          "issues": [
+            "rest RMS 65.1 \u00b5V",
+            "fist/rest 2.0"
+          ]
+        },
+        {
+          "channel": "ch3",
+          "line_share_48_52_rest": 0.977,
+          "line_share_48_52_fist": 0.901,
+          "rest_rms_uv": 9.721,
+          "fist_rms_uv": 24.881,
+          "rms_ratio_fist_rest": 2.56,
+          "rms_ratio_ok": true,
+          "flat": false,
+          "railed_fraction": 0.0,
+          "ok": true,
+          "issues": []
+        },
+        {
+          "channel": "ch4",
+          "line_share_48_52_rest": 0.9972,
+          "line_share_48_52_fist": 0.9921,
+          "rest_rms_uv": 14.048,
+          "fist_rms_uv": 32.245,
+          "rms_ratio_fist_rest": 2.295,
+          "rms_ratio_ok": true,
+          "flat": false,
+          "railed_fraction": 0.0,
+          "ok": false,
+          "issues": [
+            "rest RMS 14.0 \u00b5V"
+          ]
+        }
+      ],
+      "packet_loss_pct": 0.0,
+      "line_share_judged_on": "none",
+      "fs": 250.0,
+      "rest_s": 27.95,
+      "fist_s": 8.03,
+      "thresholds": {
+        "judge": false,
+        "reps": 2,
+        "rest_s": 15.0,
+        "cue_s": 1.5,
+        "fist_s": 5.0,
+        "discard_s": 1.0,
+        "band_hz": [
+          20.0,
+          120.0
+        ],
+        "line_band_hz": [
+          48.0,
+          52.0
+        ],
+        "line_share_low_hz": 10.0,
+        "line_share_judged_on": "none",
+        "line_share_max": 0.3,
+        "rest_rms_max_uv": 10.0,
+        "rms_ratio_min": 2.0,
+        "min_fraction_channels_ratio_ok": 0.75,
+        "flat_std_uv_max": 0.5,
+        "railed_level": 0.9,
+        "railed_fraction_max": 0.001,
+        "packet_loss_max_pct": 1.0
+      },
+      "attempt": 1,
+      "time": "2026-11-04T18:55:27",
+      "decision": "proceed",
+      "operator_note": ""
+    }
+  ]
+}

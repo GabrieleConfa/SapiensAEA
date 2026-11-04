@@ -1,0 +1,10 @@
+Session TEST_S2_FREE_2026-11-04_1850  (completed)
+Subject TEST, session 2, day 1, role train, arm right
+Source: cyton at 250 Hz, channels ch1, ch2, ch3, ch4
+Started 2026-11-04T18:50:30, ended 2026-11-04T18:52:30
+Duration: 1 min 59.9 s of data, 30012 samples (250.4 samples/s)
+Packet loss: 0 samples lost (0.000%) in 0 events
+Gaps over 1 s in the data: 0
+Reconnections: 0
+
+Free recording: no protocol, no trials, no quality check (label NONE).

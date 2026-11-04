@@ -1,0 +1,320 @@
+{
+  "schema": "emgacq-session/1",
+  "app": {
+    "name": "emgacq",
+    "version": "0.1.0",
+    "git_commit": "de900cd",
+    "python": "3.13.7",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "status": "completed",
+  "abort_reason": null,
+  "started": "2026-11-04T19:20:11",
+  "ended": "2026-11-04T19:29:04",
+  "subject": "TEST3",
+  "session": 2,
+  "day": 1,
+  "role": "train",
+  "arm": "right",
+  "band_position_pct": null,
+  "forearm_length_cm": null,
+  "channel_map": [
+    {
+      "channel": 1,
+      "column": "ch1",
+      "position": ""
+    },
+    {
+      "channel": 2,
+      "column": "ch2",
+      "position": ""
+    },
+    {
+      "channel": 3,
+      "column": "ch3",
+      "position": ""
+    },
+    {
+      "channel": 4,
+      "column": "ch4",
+      "position": ""
+    }
+  ],
+  "electrode_type": "",
+  "notes": "",
+  "source": {
+    "source": "cyton",
+    "board_id": 0,
+    "serial_port": "COM3",
+    "fs": 250.0,
+    "channels": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "full_scale_uv": 187500.0,
+    "package_modulus": 256,
+    "commands": [
+      {
+        "channel": 1,
+        "in_use": true,
+        "command": "x1060100X",
+        "reply": "Success: Channel set for 1$$$",
+        "time": 1793816252.1800463,
+        "ok": true
+      },
+      {
+        "channel": 2,
+        "in_use": true,
+        "command": "x2060100X",
+        "reply": "Success: Channel set for 2$$$",
+        "time": 1793816253.3451924,
+        "ok": true
+      },
+      {
+        "channel": 3,
+        "in_use": true,
+        "command": "x3060100X",
+        "reply": "Success: Channel set for 3$$$",
+        "time": 1793816254.540554,
+        "ok": true
+      },
+      {
+        "channel": 4,
+        "in_use": true,
+        "command": "x4060100X",
+        "reply": "Success: Channel set for 4$$$",
+        "time": 1793816255.7193663,
+        "ok": true
+      },
+      {
+        "channel": 5,
+        "in_use": false,
+        "command": "5",
+        "reply": "",
+        "time": 1793816256.8211095
+      },
+      {
+        "channel": 6,
+        "in_use": false,
+        "command": "6",
+        "reply": "",
+        "time": 1793816257.936824
+      },
+      {
+        "channel": 7,
+        "in_use": false,
+        "command": "7",
+        "reply": "",
+        "time": 1793816259.0519135
+      },
+      {
+        "channel": 8,
+        "in_use": false,
+        "command": "8",
+        "reply": "",
+        "time": 1793816260.166278
+      }
+    ],
+    "synthetic_emg_model": false,
+    "zero_rows_dropped": 1
+  },
+  "sampling_rate_hz": 250.0,
+  "channels": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "csv_channel_columns": [
+    "ch1",
+    "ch2",
+    "ch3",
+    "ch4"
+  ],
+  "units": "microvolt, raw (unfiltered)",
+  "mode": "protocol",
+  "speed": 1.0,
+  "seed": 8124188992339678931,
+  "protocol": {
+    "gestures": [
+      "OPEN",
+      "CLOSE",
+      "INDEX"
+    ],
+    "n_blocks": 2,
+    "trials_per_gesture_per_block": 6,
+    "cue_s": 1.5,
+    "hold_s": 4.0,
+    "rest_s": 4.0,
+    "block_pause_min_s": 60.0,
+    "calibration_rest_s": 10.0,
+    "calibration_gestures": [
+      "CLOSE",
+      "OPEN"
+    ],
+    "calibration_reps": 3,
+    "calibration_cue_s": 1.5,
+    "calibration_contraction_s": 3.0,
+    "calibration_between_rest_s": 5.0,
+    "closing_rest_s": 10.0
+  },
+  "quality_thresholds": {
+    "judge": false,
+    "reps": 2,
+    "rest_s": 15.0,
+    "cue_s": 1.5,
+    "fist_s": 5.0,
+    "discard_s": 1.0,
+    "band_hz": [
+      20.0,
+      120.0
+    ],
+    "line_band_hz": [
+      48.0,
+      52.0
+    ],
+    "line_share_low_hz": 10.0,
+    "line_share_judged_on": "none",
+    "line_share_max": 0.3,
+    "rest_rms_max_uv": 10.0,
+    "rms_ratio_min": 2.0,
+    "min_fraction_channels_ratio_ok": 0.75,
+    "flat_std_uv_max": 0.5,
+    "railed_level": 0.9,
+    "railed_fraction_max": 0.001,
+    "packet_loss_max_pct": 1.0
+  },
+  "planned_duration_s": 522.0,
+  "config_sha256": "c0be9e9ba79195cc8d7c8b9cfefb5d449aa1de77cb8d7eb25e0c79fec09f9da3",
+  "config": {
+    "paths": {
+      "data_dir": "data",
+      "assets_dir": "assets"
+    },
+    "board": {
+      "source": "cyton",
+      "serial_port": "COM3",
+      "sampling_rate_hz": 250,
+      "channels": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "channel_positions": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "channel_command": "x{ch}060100X",
+      "power_down_command": "{ch}",
+      "full_scale_uv": 187500.0,
+      "read_interval_s": 0.02
+    },
+    "giga": {
+      "url": "TODO_HW",
+      "simulator_url": "socket://localhost:8765",
+      "sampling_rate_hz": 1000,
+      "n_channels": 8,
+      "repo_root": ".."
+    },
+    "synthetic": {
+      "emg_model": true,
+      "packet_loss_fraction": 0.001,
+      "seed": 0
+    },
+    "protocol": {
+      "gestures": [
+        "OPEN",
+        "CLOSE",
+        "INDEX"
+      ],
+      "n_blocks": 2,
+      "trials_per_gesture_per_block": 6,
+      "cue_s": 1.5,
+      "hold_s": 4.0,
+      "rest_s": 4.0,
+      "block_pause_min_s": 60.0,
+      "calibration_rest_s": 10.0,
+      "calibration_gestures": [
+        "CLOSE",
+        "OPEN"
+      ],
+      "calibration_reps": 3,
+      "calibration_cue_s": 1.5,
+      "calibration_contraction_s": 3.0,
+      "calibration_between_rest_s": 5.0,
+      "closing_rest_s": 10.0
+    },
+    "quality": {
+      "judge": false,
+      "reps": 2,
+      "rest_s": 15.0,
+      "cue_s": 1.5,
+      "fist_s": 5.0,
+      "discard_s": 1.0,
+      "band_hz": [
+        20.0,
+        120.0
+      ],
+      "line_band_hz": [
+        48.0,
+        52.0
+      ],
+      "line_share_low_hz": 10.0,
+      "line_share_judged_on": "none",
+      "line_share_max": 0.3,
+      "rest_rms_max_uv": 10.0,
+      "rms_ratio_min": 2.0,
+      "min_fraction_channels_ratio_ok": 0.75,
+      "flat_std_uv_max": 0.5,
+      "railed_level": 0.9,
+      "railed_fraction_max": 0.001,
+      "packet_loss_max_pct": 1.0
+    },
+    "monitor": {
+      "gap_s": 1.0,
+      "advance_hold_s": 0.25,
+      "display_window_s": 5.0,
+      "display_band_hz": [
+        20.0,
+        120.0
+      ],
+      "notch_hz": [
+        50.0,
+        100.0
+      ],
+      "rms_window_s": 0.25,
+      "flag_window_s": 1.0,
+      "csv_flush_s": 1.0
+    },
+    "display": {
+      "subject_screen": "auto",
+      "font_family": "Segoe UI",
+      "colors": {
+        "OPEN": "#2F80ED",
+        "CLOSE": "#F2994A",
+        "INDEX": "#BB6BD9",
+        "REST": "#6FA8A0",
+        "TRANSITION": "#E0E0E0",
+        "PAUSE": "#8A9BA8",
+        "background": "#15191D"
+      }
+    }
+  },
+  "stats": {
+    "rows": 133302,
+    "packets_received": 171256,
+    "packets_lost": 0,
+    "packet_loss_pct": 0.0,
+    "duplicates": 0,
+    "gaps": [],
+    "reconnects": 0,
+    "bad_trials": [],
+    "interrupted_attempts": [],
+    "quality_check": "NOT_JUDGED"
+  }
+}

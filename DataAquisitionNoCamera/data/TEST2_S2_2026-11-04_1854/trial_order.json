@@ -1,0 +1,236 @@
+{
+  "subject": "TEST2",
+  "session": 2,
+  "seed": 5540964288585511682,
+  "seed_rule": "seed = int.from_bytes(sha256(f\"{subject}|{session}\").digest()[:8], \"big\")",
+  "gestures": [
+    "OPEN",
+    "CLOSE",
+    "INDEX"
+  ],
+  "trials_per_gesture_per_block": 6,
+  "blocks": [
+    [
+      "INDEX",
+      "CLOSE",
+      "OPEN",
+      "CLOSE",
+      "OPEN",
+      "CLOSE",
+      "INDEX",
+      "OPEN",
+      "CLOSE",
+      "OPEN",
+      "INDEX",
+      "OPEN",
+      "INDEX",
+      "OPEN",
+      "INDEX",
+      "CLOSE",
+      "INDEX",
+      "CLOSE"
+    ],
+    [
+      "OPEN",
+      "CLOSE",
+      "INDEX",
+      "OPEN",
+      "CLOSE",
+      "OPEN",
+      "CLOSE",
+      "OPEN",
+      "INDEX",
+      "CLOSE",
+      "OPEN",
+      "INDEX",
+      "CLOSE",
+      "INDEX",
+      "CLOSE",
+      "INDEX",
+      "OPEN",
+      "INDEX"
+    ]
+  ],
+  "trials": [
+    {
+      "trial_id": 1,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 2,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 3,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 4,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 5,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 6,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 7,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 8,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 9,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 10,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 11,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 12,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 13,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 14,
+      "block": 1,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 15,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 16,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 17,
+      "block": 1,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 18,
+      "block": 1,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 19,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 20,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 21,
+      "block": 2,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 22,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 23,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 24,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 25,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 26,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 27,
+      "block": 2,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 28,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 29,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 30,
+      "block": 2,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 31,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 32,
+      "block": 2,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 33,
+      "block": 2,
+      "gesture": "CLOSE"
+    },
+    {
+      "trial_id": 34,
+      "block": 2,
+      "gesture": "INDEX"
+    },
+    {
+      "trial_id": 35,
+      "block": 2,
+      "gesture": "OPEN"
+    },
+    {
+      "trial_id": 36,
+      "block": 2,
+      "gesture": "INDEX"
+    }
+  ]
+}
