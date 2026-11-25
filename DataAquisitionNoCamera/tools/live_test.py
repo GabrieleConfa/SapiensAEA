@@ -137,6 +137,9 @@ class Model:
             raise ValueError("feature_order in features.json is not channel-major; this script cannot rebuild it")
         stem = next(self.dir.glob("*.keras")).stem
         os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+        import warnings
+
+        warnings.filterwarnings("ignore", message=r"\s*Warning: tf.lite.Interpreter is deprecated")
         import tensorflow as tf      # slow import, only when a model is loaded
 
         self.kind = kind
@@ -453,6 +456,9 @@ def main(argv: list[str] | None = None) -> int:
             "started": dt.datetime.now().isoformat(timespec="seconds"), "calibration_s": args.cal,
             "vote": args.vote, "trial_order": [] if args.free else trials, "seed": seed}
     try:
+        where = "synthetic board" if args.synthetic else f"Cyton on {args.port or cfg['board.serial_port']}"
+        print(f"connecting to the {where} (5-10 s; if nothing happens after ~20 s: board switch on PC, "
+              "dongle on GPIO6, right --port, OpenBCI GUI closed)...", flush=True)
         info = source.connect()
         print(f"connected: {info.get('board', source.kind)}")
         source.start()
